@@ -14,7 +14,7 @@ Project is created with:
 * SQLAlchemy
 * MySQL
 * Docker
-* Heroku
+* Google Cloud Platform
 * Postman
 
 ## Running live
