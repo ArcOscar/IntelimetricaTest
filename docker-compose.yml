@@ -1,0 +1,39 @@
+version: "3.7"
+services:
+  app:
+    depends_on:
+      - "mysql"
+    container_name: "intelimetrica-test"
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    image: intelimetrica-test:lastest
+    environment:
+      FLASK_ENV: development
+      DB_USUARIO: root
+      DB_CLAVE: RootRoot77
+      DB_HOST: mysql
+      DB_NOMBRE: db_api_intelimetrica
+      JWT_SECRET_KEY: S3CreT-Kei
+    ports:
+      - "5000:5000"
+    restart: always
+    networks:
+      - internal
+  
+  mysql:
+    container_name: mysql
+    image: mysql:8.0
+    environment:
+      - MYSQL_ROOT_PASSWORD=RootRoot77
+      - MYSQL_DATABASE=db_api_intelimetrica
+    ports:
+      - "3366:3306"
+    volumes:
+      - ./db_api_intelimetrica.sql:/docker-entrypoint-initdb.d/db_api_intelimetrica.sql
+    networks:
+      - internal
+
+networks:
+  internal:
+    driver: bridge

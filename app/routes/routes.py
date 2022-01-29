@@ -121,8 +121,7 @@ def json_restaurants():
     # Earth (3959 miles,6371 Km or 3440 nautical miles)
 
     # Query works, but restaurants in table are really close to each other :(
-    # There's one restaurant with id=12 away from the rest of the restaurants
-    # at aprox coordinates lat:78, lng:65, z:9131.9
+    # Some good values are lat = 19.441, lng = -99.12, radius = 1
     sql = """SELECT COUNT(*) as count, AVG(rating) as avg, STDDEV(rating) as stddv FROM restaurantes WHERE ( 6371 * acos( cos( radians(:lt) ) * cos( radians( lat ) ) * cos( radians( lng ) - radians(:ln) ) + sin( radians(:lt) ) * sin(radians(lat)) ) ) < :r;"""
 
     rs = db.session.execute(sql, {'lt': latitude, 'ln': longitude, 'r': radius}).first()
