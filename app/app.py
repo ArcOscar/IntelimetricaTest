@@ -1,7 +1,7 @@
 from flask import Flask
 from database import db
 from sqlalchemy_utils import create_database, database_exists
-from routes.routes import blueprint
+from routes.routes import blue_print
 from flask_jwt_extended import JWTManager
 import datetime
 
@@ -28,7 +28,7 @@ jwt = JWTManager(app)
 db.init_app(app)
 
 #Routes instance
-app.register_blueprint(blueprint)
+app.register_blueprint(blue_print)
 
 #Create db
 with app.app_context():

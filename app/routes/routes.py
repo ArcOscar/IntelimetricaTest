@@ -1,22 +1,21 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
 from models.models import Restaurante
-from database import db
 from schema.schemas import restaurantes_schema
+from database import db
 
-from app.models.models import Restaurante
-
-blueprint = Blueprint('app', __name__)
+blue_print = Blueprint('app', __name__)
 
 #Home route
-@blueprint.route('/', methods=['GET'])
+@blue_print.route('/', methods=['GET'])
 def inicio():
-    return jsonify(respuesta='Rest API con Python, Flask y MySQL')
+    access_token = create_access_token(identity='restaurante')
+    return jsonify(access_token=access_token), 200
 
 #Protected routes (CRUD)
 
 #Create Restaurante
-@blueprint.route('/api/restaurantes', methods=['POST'])
+@blue_print.route('/api/restaurantes', methods=['POST'])
 @jwt_required()
 def create_restaurante():
     try:
@@ -42,7 +41,7 @@ def create_restaurante():
         return jsonify(respuesta='Error en Petición'),500
 
 #Read Restaurante
-@blueprint.route('/api/restaurantes', methods=['GET'])
+@blue_print.route('/api/restaurantes', methods=['GET'])
 @jwt_required()
 def read_restaurante():
     try:
@@ -52,19 +51,19 @@ def read_restaurante():
     except Exception:
         return jsonify(respuesta='Error en Petición'),500
 
-#Read by Id Restaurante
-@blueprint.route('/api/restaurantes/<String:id>', methods=['GET'])
+#Read by rating Restaurante
+@blue_print.route('/api/restaurantes/<int:rating>', methods=['GET'])
 @jwt_required()
-def read_restaurante_by_id(id):
+def read_restaurante_by_rating(rating):
     try:
-        restaurante = Restaurante.query.get(id)
+        restaurante = Restaurante.query.filter_by(rating=rating)
         respuesta = restaurantes_schema.dump(restaurante)
         return jsonify(respuesta), 200
     except Exception:
         return jsonify(respuesta='Error en Petición'),500
 
 #Update Restaurante
-@blueprint.route('/api/restaurantes/<String:id>', methods=['PUT'])
+@blue_print.route('/api/restaurantes/<string:id>', methods=['PUT'])
 @jwt_required()
 def update_restaurante(id):
     try:
@@ -91,7 +90,7 @@ def update_restaurante(id):
         return jsonify(respuesta='Error en Petición'),500
 
 #Delete by Id Restaurante
-@blueprint.route('/api/restaurantes/<String:id>', methods=['DELETE'])
+@blue_print.route('/api/restaurantes/<string:id>', methods=['DELETE'])
 @jwt_required()
 def delete_restaurante_by_id(id):
     try:
