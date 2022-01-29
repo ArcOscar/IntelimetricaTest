@@ -2,6 +2,8 @@ from flask import Flask
 from database import db
 from sqlalchemy_utils import create_database, database_exists
 from routes.routes import blueprint
+from flask_jwt_extended import JWTManager
+import datetime
 
 app = Flask(__name__)
 
@@ -15,6 +17,12 @@ DB_URL = f'mysql+pymysql://{db_usuario}:{db_clave}@{db_host}/{db_nombre}'
 
 app.config['SQLALCHEMY_DATABASE_URI'] = DB_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+app.config['JWT_SECRET_KEY'] = "S3CreT-Kei"
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(weeks=3)
+
+#JWT
+jwt = JWTManager(app)
 
 #Initialize SQLAlchemy
 db.init_app(app)
