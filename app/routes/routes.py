@@ -1,8 +1,10 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
 from models.models import Restaurante
-from schema.schemas import restaurantes_schema
+from schema.schemas import restaurantes_schema, coordinates_schema
 from database import db
+from sqlalchemy import func
+from sqlalchemy.sql import text
 
 blue_print = Blueprint('app', __name__)
 
@@ -10,12 +12,12 @@ blue_print = Blueprint('app', __name__)
 @blue_print.route('/', methods=['GET'])
 def inicio():
     access_token = create_access_token(identity='restaurante')
+    #Token in Postman will be alive for 3 weeks
     return jsonify(access_token=access_token), 200
 
-#Protected routes (CRUD)
-
+##### Protected routes (CRUD) #####
 #Create Restaurante
-@blue_print.route('/api/restaurantes', methods=['POST'])
+@blue_print.route('/api/restaurants', methods=['POST'])
 @jwt_required()
 def create_restaurante():
     try:
@@ -41,7 +43,7 @@ def create_restaurante():
         return jsonify(respuesta='Error en Petición'),500
 
 #Read Restaurante
-@blue_print.route('/api/restaurantes', methods=['GET'])
+@blue_print.route('/api/restaurants', methods=['GET'])
 @jwt_required()
 def read_restaurante():
     try:
@@ -52,18 +54,19 @@ def read_restaurante():
         return jsonify(respuesta='Error en Petición'),500
 
 #Read by rating Restaurante
-@blue_print.route('/api/restaurantes/<int:rating>', methods=['GET'])
+@blue_print.route('/api/restaurants/<int:rating>', methods=['GET'])
 @jwt_required()
 def read_restaurante_by_rating(rating):
     try:
         restaurante = Restaurante.query.filter_by(rating=rating)
         respuesta = restaurantes_schema.dump(restaurante)
+        print(respuesta)
         return jsonify(respuesta), 200
     except Exception:
         return jsonify(respuesta='Error en Petición'),500
 
 #Update Restaurante
-@blue_print.route('/api/restaurantes/<string:id>', methods=['PUT'])
+@blue_print.route('/api/restaurants/<string:id>', methods=['PUT'])
 @jwt_required()
 def update_restaurante(id):
     try:
@@ -90,7 +93,7 @@ def update_restaurante(id):
         return jsonify(respuesta='Error en Petición'),500
 
 #Delete by Id Restaurante
-@blue_print.route('/api/restaurantes/<string:id>', methods=['DELETE'])
+@blue_print.route('/api/restaurants/<string:id>', methods=['DELETE'])
 @jwt_required()
 def delete_restaurante_by_id(id):
     try:
@@ -104,3 +107,26 @@ def delete_restaurante_by_id(id):
         return jsonify(respuesta='Restaurante Eliminado Exitosamente'), 200
     except Exception:
         return jsonify(respuesta='Error en Petición'),500
+
+
+######## TASK 2 ########
+@blue_print.route('/api/restaurants/statistics', methods=['GET'])
+@jwt_required()
+def json_restaurants():
+    latitude = request.args.get('latitude', default = '*', type = float)
+    longitude = request.args.get('longitude', default = '*', type = float)
+    radius = request.args.get('radius', default = 1, type = float)
+
+    # To get your results in Km or miles, multiply the result with the mean radius of 
+    # Earth (3959 miles,6371 Km or 3440 nautical miles)
+
+    # Query works, but restaurants in table are really close to each other :(
+    # There's one restaurant with id=12 away from the rest of the restaurants
+    # at aprox coordinates lat:78, lng:65, z:9131.9
+    sql = """SELECT COUNT(*) as count, AVG(rating) as avg, STDDEV(rating) as stddv FROM restaurantes WHERE ( 6371 * acos( cos( radians(:lt) ) * cos( radians( lat ) ) * cos( radians( lng ) - radians(:ln) ) + sin( radians(:lt) ) * sin(radians(lat)) ) ) < :r;"""
+
+    rs = db.session.execute(sql, {'lt': latitude, 'ln': longitude, 'r': radius}).first()
+
+    respuesta = coordinates_schema.dump(rs)
+    print(respuesta)
+    return jsonify(respuesta), 200
