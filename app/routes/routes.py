@@ -8,8 +8,13 @@ from sqlalchemy.sql import text
 
 blue_print = Blueprint('app', __name__)
 
+@app.route('/favicon.ico')
+def favicon():
+    return send(os.path.join(app.root_path, 'static'), 'favicon.ico', mimetype='icicle.png')
+
 #Home route
 @blue_print.route('/', methods=['GET'])
+@blue_print.route('/home', methods=['GET'])
 def inicio():
     access_token = create_access_token(identity='restaurante')
     #Token in Postman will be alive for 3 weeks
