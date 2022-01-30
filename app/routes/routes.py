@@ -1,16 +1,10 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
+from flask_jwt_extended import create_access_token, jwt_required
 from models.models import Restaurante
 from schema.schemas import restaurantes_schema, coordinates_schema
 from database import db
-from sqlalchemy import func
-from sqlalchemy.sql import text
 
 blue_print = Blueprint('app', __name__)
-
-@app.route('/favicon.ico')
-def favicon():
-    return send(os.path.join(app.root_path, 'static'), 'favicon.ico', mimetype='icicle.png')
 
 #Home route
 @blue_print.route('/', methods=['GET'])
